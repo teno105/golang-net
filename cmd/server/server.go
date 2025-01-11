@@ -34,9 +34,10 @@ func (es *echoServer) OnBoot(eng gnet.Engine) gnet.Action {
 	return gnet.None
 }
 
-func (es *echoServer) Ontraffic(c gnet.Conn) gnet.Action {
+func (es *echoServer) OnTraffic(c gnet.Conn) gnet.Action {
 	buf, _ := c.Next(-1)
 	c.Write(buf)
+	log.Printf("msg:%s", buf)
 	return gnet.None
 }
 
