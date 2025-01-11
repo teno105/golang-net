@@ -25,11 +25,6 @@ golang-net/
 └── README.md
 ```
 
-## 요구 사항
-
-- **Go 언어**가 설치되어 있어야 합니다. [Go 설치 가이드](https://golang.org/doc/install)
-- **Git**이 설치되어 있어야 합니다.
-
 ## 실습 순서
 
 ### 1. 패키지 구조를 위한 디렉토리 생성
@@ -101,7 +96,7 @@ clean:
 make run
 ```
 
-### 3. gnet 설치
+### 30.1 gnet을 이용해서 echo 서버 제작
  gnet은 TCP/UDP와 같은 기본적인 네트워크 프로토콜을 이용한 서버 프로그램을 만들 수 있게 도와주는 오픈 소스 패키지 입니다.
  gnet은 사용이 쉽고 고성능을 자랑합니다.
 
@@ -109,8 +104,6 @@ make run
 ```bash
 go get -u github.com/panjf2000/gnet/v2@v2.3.0
 ```
-
-### 4. `server.go` 생성
 
 `cmd/server/` 디렉터리 아래에 `server.go` 파일을 생성하고, gnet 을 사용한 Echo 서버 코드를 작성합니다.
 
@@ -179,7 +172,7 @@ func main() {
 
 
 
-### 5. `client.go` 생성
+### 30.2 클라이언트 제작
 
 `cmd/client/` 디렉터리 아래에 `client.go` 파일을 생성하고, net 을 사용한 클라이언트 코드를 작성합니다.
 
