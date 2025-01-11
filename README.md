@@ -4,17 +4,21 @@
 
 # echoserver
 
-`echoserver`는 Golang으로 작성된 간단한 애플리케이션으로, 기본적인 Application의 구조와 테스트 방법을 익히기 위한 실습입니다.
+`echoserver`는 Golang으로 작성된 간단한 Echo 애플리케이션으로, 기본적인 client-server 통신하는 방법을 익히기 위한 실습입니다.
 
 
 ## 프로젝트 구조
 
 ```plaintext
-echoserver/
+golang-net/
 │
 ├── cmd/
-│   └── echoserver/
-│       └── main.go
+│   └── server/
+│       └── server.go
+│
+├── cmd/
+│   └── client/
+│       └── clinet.go
 │
 ├── go.mod
 ├── Makefile
@@ -33,29 +37,87 @@ echoserver/
 먼저 프로젝트 디렉터리를 설정하고 필요한 디렉터리들을 생성합니다.
 
 ```bash
-mkdir echoserver
-cd echoserver
-go mod init echoserver
+mkdir golang-net
+cd golang-net
+go mod init server
 
-mkdir -p cmd/echoserver
+mkdir -p cmd/server
 ```
 
-### 2. `main.go` 생성
+### 2. gnet 설치
+ gnet은 TCP/UDP와 같은 기본적인 네트워크 프로토콜을 이용한 서버 프로그램을 만들 수 있게 도와주는 오픈 소스 패키지 입니다.
+ gnet은 사용이 쉽고 고성능을 자랑합니다.
 
-`cmd/echoserver/` 디렉터리 아래에 `main.go` 파일을 생성하고, 간단한 `Hello, World!` 메시지를 출력하는 코드를 작성합니다.
+ gnet 설치하기
+```bash
+go get -u github.com/panjf2000/gnet/v2@v2.3.0
+```
+
+### 3. `server.go` 생성
+
+`cmd/server/` 디렉터리 아래에 `server.go` 파일을 생성하고, gnet 을 사용한 Echo 서버 코드를 작성합니다.
 
 ```go
-// cmd/echoserver/main.go
+// cmd/server/server.go
 package main
 
-import "fmt"
+import (
+	"flag"
+	"fmt"
+	"log"
+
+	gnet "github.com/panjf2000/gnet/v2"
+)
+
+type echoServer struct {
+	gnet.BuiltinEventEngine
+
+	eng       gnet.Engine
+	addr      string
+	multicore bool
+}
+
+func (es *echoServer) OnOpen(c gnet.Conn) (out []byte, action gnet.Action) {
+	log.Printf("client connected. address:%s", c.RemoteAddr().String())
+	return nil, gnet.None
+}
+
+func (es *echoServer) OnClose(c gnet.Conn, err error) (action gnet.Action) {
+	log.Printf("clinet disconnected. address:%s",
+		c.RemoteAddr().String())
+	return gnet.None
+}
+
+func (es *echoServer) OnBoot(eng gnet.Engine) gnet.Action {
+	es.eng = eng
+	log.Printf("echo server with multi-core=%t is listening on %s\n",
+		es.multicore, es.addr)
+	return gnet.None
+}
+
+func (es *echoServer) Ontraffic(c gnet.Conn) gnet.Action {
+	buf, _ := c.Next(-1)
+	c.Write(buf)
+	return gnet.None
+}
 
 func main() {
-    fmt.Println("Hello, World!")
+	var port int
+	var multicore bool
+
+	flag.IntVar(&port, "port", 9000, "--port 9000")
+	flag.BoolVar(&multicore, "multicore", false, "--multicore true")
+	flag.Parse()
+
+	echo := &echoServer{
+		addr:      fmt.Sprintf("tcp://:%d", port),
+		multicore: multicore,
+	}
+	log.Fatal(gnet.Run(echo, echo.addr, gnet.WithMulticore(multicore)))
 }
 ```
 
-이 코드를 통해 프로그램을 실행하면 `Hello, World!`가 출력됩니다.
+이 코드를 통해 프로그램을 실행하면 `TCP port:9000`을 사용하는 서버가 실행됩니다.
 
 ### 3. `Makefile` 작성
 
@@ -63,8 +125,8 @@ func main() {
 
 ```makefile
 # Go 관련 변수 설정
-APP_NAME := echoserver
-CMD_DIR := ./cmd/echoserver
+APP_NAME := server
+CMD_DIR := ./cmd/server
 BUILD_DIR := ./build
 
 .PHONY: all clean build run test fmt vet install
@@ -114,4 +176,4 @@ clean:
 make run
 ```
 
-이 명령어를 통해 `main.go`에서 작성한 `Hello, World!` 메시지를 확인할 수 있습니다.
+

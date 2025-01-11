@@ -1,6 +1,6 @@
 # Go 관련 변수 설정
-APP_NAME := echoserver
-CMD_DIR := ./cmd/echoserver
+APP_NAME := server
+CMD_DIR := ./cmd/server
 BUILD_DIR := ./build
 
 .PHONY: all clean build run test fmt vet install
