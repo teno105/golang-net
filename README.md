@@ -351,7 +351,7 @@ func main() {
 위 코드를 작성 후, build 후에 서버에 접속을 합니다.
 ```bash
 cd cmd/client
-go build client.go
+go run client.go
 ```
 ### 실행화면
 ![스크린샷 2025-01-12 오후 7 14 16](https://github.com/user-attachments/assets/ac37d156-a4ee-4b01-992d-296be51f953e)
